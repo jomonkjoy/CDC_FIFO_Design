@@ -27,10 +27,26 @@ module multibit_mcp_sync #(
       bdata <= data;
     end
   end
+  // Sync back to aclk
+  multibit_mcp_double_sync_pulsegen
+  multibit_mcp_double_sync_pulsegen_aack (
+    .clk(aclk),
+    .reset(areset),
+    .d(back),
+    .p(aack)
+  );
+  // Sync aenable to benable
+  multibit_mcp_double_sync_pulsegen
+  multibit_mcp_double_sync_pulsegen_benable (
+    .clk(aclk),
+    .reset(areset),
+    .d(aenable),
+    .p(benable)
+  );
   
 endmodule
 
-module double_sync_pulsegen (
+module multibit_mcp_double_sync_pulsegen (
   input  logic clk,
   input  logic reset,
   input  logic d,

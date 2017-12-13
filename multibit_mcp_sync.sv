@@ -21,10 +21,28 @@ module multibit_mcp_sync #(
       data <= adata;
     end
   end
+  // generate aenable-using toggle-FF
+  logic aenable,benable;
+  always_ff @(posedge aclk) begin
+    if (areset) begin
+      aenable <= 1'b0;
+    end else begin
+      aenable <= aenable ^ (avalid & aready);
+    end
+  end
   // Receive data sample register
   always_ff @(posedge bclk) begin
     if (bvalid && bready) begin
       bdata <= data;
+    end
+  end
+  // generate back-using toggle-FF
+  logic aack,back;
+  always_ff @(posedge bclk) begin
+    if (breset) begin
+      back <= 1'b0;
+    end else begin
+      back <= back ^ (bvalid & bready);
     end
   end
   // Sync back to aclk
@@ -38,8 +56,8 @@ module multibit_mcp_sync #(
   // Sync aenable to benable
   multibit_mcp_double_sync_pulsegen
   multibit_mcp_double_sync_pulsegen_benable (
-    .clk(aclk),
-    .reset(areset),
+    .clk(bclk),
+    .reset(breset),
     .d(aenable),
     .p(benable)
   );

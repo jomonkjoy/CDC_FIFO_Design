@@ -16,6 +16,29 @@ module multibit_fifo_sync #(
 
 endmodule
 
+module multibit_fifo_dpram #(
+  parameter DATA_WIDTH = 8
+) (
+  input  logic                  clk,
+  input  logic                  wen,
+  input  logic                  waddr,
+  input  logic [DATA_WIDTH-1:0] wdata,
+  input  logic                  raddr,
+  output logic [DATA_WIDTH-1:0] rdata
+);
+  
+  logic [DATA_WIDTH-1:0] mem[0:1];
+  
+  always_ff @(posedge clk) begin
+    if (wen) begin
+      mem[waddr] <= wdata;
+    end
+  end
+  
+  assign rdata = mem[raddr];
+  
+endmodule
+
 module multibit_fifo_double_sync (
   input  logic clk,
   input  logic reset,

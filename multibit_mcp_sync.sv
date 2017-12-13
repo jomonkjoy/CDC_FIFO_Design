@@ -45,6 +45,24 @@ module multibit_mcp_sync #(
       back <= back ^ (bvalid & bready);
     end
   end
+  // Transmit FSM
+  multibit_mcp_tx_fsm
+  multibit_mcp_tx_fsm_inst (
+    .clk(aclk),
+    .reset(areset),
+    .valid(avalid),
+    .ack(aack),
+    .ready(aready)
+  );
+  // Receive FSM
+  multibit_mcp_rx_fsm
+  multibit_mcp_rx_fsm_inst (
+    .clk(bclk),
+    .reset(breset),
+    .enable(benable),
+    .ready(bready),
+    .valid(bvalid)
+  );
   // Sync back to aclk
   multibit_mcp_double_sync_pulsegen
   multibit_mcp_double_sync_pulsegen_aack (
@@ -61,6 +79,56 @@ module multibit_mcp_sync #(
     .d(aenable),
     .p(benable)
   );
+  
+endmodule
+
+module multibit_mcp_tx_fsm (
+  input  logic clk,
+  input  logic reset,
+  input  logic valid,
+  input  logic ack,
+  output logic ready
+);
+  
+  enum logic {IDLE=1'b1,BUSY=1'b0} state;
+  
+  always_ff @(posedge clk) begin
+    if (reset) begin
+      state <= IDLE;
+    end else begin
+      case (state) // parallel_case
+        IDLE : state <= valid ? BUSY : IDLE;
+        BUSY : state <= ack   ? IDLE : BUSY;
+      endcase
+    end
+  end
+  
+  assign ready = state;
+  
+endmodule
+
+module multibit_mcp_rx_fsm (
+  input  logic clk,
+  input  logic reset,
+  input  logic enable,
+  input  logic ready,
+  output logic valid
+);
+  
+  enum logic {IDLE=1'b0,VALID=1'b1} state;
+  
+  always_ff @(posedge clk) begin
+    if (reset) begin
+      state <= IDLE;
+    end else begin
+      case (state) // parallel_case
+        IDLE  : state <= enable ? VALID : IDLE;
+        VALID : state <= ready  ? IDLE  : VALID;
+      endcase
+    end
+  end
+  
+  assign valid = state;
   
 endmodule
 

@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module cpu_if_cdc #(
   parameter ADDR_WIDTH = 32,
   parameter DATA_WIDTH = 32

@@ -23,11 +23,11 @@ module async_fifo_dpram #(
   assign wincr = wen & ~wfull;
   assign rincr = ren & ~rempty;
   // Write-domain to read-domain synchronizer
-  gray_sync #( .DATA_WIDTH (ADDR_WIDTH), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_wptr (
+  gray_sync #( .DATA_WIDTH (ADDR_WIDTH+1), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_wptr (
     .clk  (rclk), .din  (wptr), .dout (r_wptr) 
   );
   // Read-domain to write-domain synchronizer
-  gray_sync #( .DATA_WIDTH (ADDR_WIDTH), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_rptr (
+  gray_sync #( .DATA_WIDTH (ADDR_WIDTH+1), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_rptr (
     .clk  (wclk), .din  (rptr), .dout (w_rptr) 
   );
   // FIFO dualport memory buffer

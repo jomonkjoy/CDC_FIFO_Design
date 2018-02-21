@@ -1,6 +1,7 @@
 module async_fifo_dpram #(
-  parameter ADDR_WIDTH = 3,
-  parameter DATA_WIDTH = 8
+  parameter int SYNC_STAGE = 3,
+  parameter int ADDR_WIDTH = 3,
+  parameter int DATA_WIDTH = 8
 ) (
   input  logic                  wclk,
   input  logic                  wreset,
@@ -45,7 +46,7 @@ module async_fifo_dpram #(
 endmodule
 
 module rptr_empty #( 
-  parameter ADDR_WIDTH = 4 
+  parameter int ADDR_WIDTH = 4 
 ) (
   input  logic clk,
   input  logic reset,
@@ -86,7 +87,7 @@ module rptr_empty #(
 endmodule
 
 module wptr_full #( 
-  parameter ADDR_WIDTH = 4 
+  parameter int ADDR_WIDTH = 4 
 ) (
   input  logic clk,
   input  logic reset,
@@ -127,8 +128,8 @@ module wptr_full #(
 endmodule
 
 module async_fifo_dpram #(
-  parameter ADDR_WIDTH = 3,
-  parameter DATA_WIDTH = 8
+  parameter int ADDR_WIDTH = 3,
+  parameter int DATA_WIDTH = 8
 ) (
   input  logic                  clk,
   input  logic                  wen,
@@ -156,7 +157,7 @@ endmodule
 // Min 3 stage pipeline to mitegate metastability due to setup and hold time violations
 // use ASYNC_REG and max_delay[with min-period(freq1,freq2)] constraint with async-clock groups {clk1,clk2}
 module data_sync #(
-  parameter SYNC_STAGE = 3
+  parameter int SYNC_STAGE = 3
 ) (
   input  logic clk,
   input  logic din,
@@ -173,8 +174,8 @@ module data_sync #(
 endmodule
 // gray-code synchronizer using Data-Sync
 module gray_sync #(
-  parameter DATA_WIDTH = 4,
-  parameter SYNC_STAGE = 3
+  parameter int DATA_WIDTH = 4,
+  parameter int SYNC_STAGE = 3
 ) (
   input  logic clk,
   input  logic [DATA_WIDTH-1:0] din,

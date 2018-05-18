@@ -19,4 +19,20 @@ module axis_upsizer #(
   input  logic                    m_axis_tready
   );
   
+  generate for(genvar i=0; i<=DATA_RATIO; i++) begin : gen
+    sync_fifo_core #(
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .DATA_WIDTH(DATA_WIDTH)
+    ) fifo_core_inst (
+      .clk    (clk),
+      .reset  (reset),
+      .wen    (wen),
+      .wdata  (wdata),
+      .wfull  (wfull),
+      .ren    (ren),
+      .rdata  (rdata),
+      .rempty (rempty)
+    );
+  end endgenerate
+  
 endmodule

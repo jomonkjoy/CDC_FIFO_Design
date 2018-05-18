@@ -1,4 +1,4 @@
-module async_fifo_dpram #(
+module async_fifo_core #(
   parameter int SYNC_STAGE = 3,
   parameter int ADDR_WIDTH = 3,
   parameter int DATA_WIDTH = 8
@@ -23,11 +23,11 @@ module async_fifo_dpram #(
   assign wincr = wen & ~wfull;
   assign rincr = ren & ~rempty;
   // Write-domain to read-domain synchronizer
-  gray_sync #( .DATA_WIDTH (ADDR_WIDTH+1), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_wptr (
+  async_fifo_gray_sync #( .DATA_WIDTH (ADDR_WIDTH+1), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_wptr (
     .clk  (rclk), .din  (wptr), .dout (r_wptr) 
   );
   // Read-domain to write-domain synchronizer
-  gray_sync #( .DATA_WIDTH (ADDR_WIDTH+1), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_rptr (
+  async_fifo_gray_sync #( .DATA_WIDTH (ADDR_WIDTH+1), .SYNC_STAGE (SYNC_STAGE) ) gray_sync_rptr (
     .clk  (wclk), .din  (rptr), .dout (w_rptr) 
   );
   // FIFO dualport memory buffer
@@ -35,17 +35,17 @@ module async_fifo_dpram #(
     .clk(wclk), .wen(wincr), .waddr(waddr), .wdata(wdata), .raddr(raddr), .rdata(rdata) 
   );
   // Read pointer & empty generation logic
-  rptr_empty #( .ADDR_WIDTH (ADDR_WIDTH) ) rptr_empty (
+  async_fifo_rptr_empty #( .ADDR_WIDTH (ADDR_WIDTH) ) rptr_empty (
     .clk(rclk), .reset(rreset), .rincr(rincr), .r_wptr(r_wptr), .rptr(rptr), .raddr(raddr), .rempty(rempty) 
   );
   // Write pointer & full generation logic
-  wptr_full #( .ADDR_WIDTH (ADDR_WIDTH) ) wptr_full (
+  async_fifo_wptr_full #( .ADDR_WIDTH (ADDR_WIDTH) ) wptr_full (
     .clk(wclk), .reset(wreset), .wincr(wincr), .w_rptr(w_rptr), .wptr(wptr), .waddr(waddr), .wfull(wfull) 
   );
   
 endmodule
 
-module rptr_empty #( 
+module async_fifo_rptr_empty #( 
   parameter int ADDR_WIDTH = 4 
 ) (
   input  logic clk,
@@ -86,7 +86,7 @@ module rptr_empty #(
   
 endmodule
 
-module wptr_full #( 
+module async_fifo_wptr_full #( 
   parameter int ADDR_WIDTH = 4 
 ) (
   input  logic clk,
@@ -156,7 +156,7 @@ endmodule
 // Data-Sync : synchronize single-bit data
 // Min 3 stage pipeline to mitegate metastability due to setup and hold time violations
 // use ASYNC_REG and max_delay[with min-period(freq1,freq2)] constraint with async-clock groups {clk1,clk2}
-module data_sync #(
+module async_fifo_data_sync #(
   parameter int SYNC_STAGE = 3
 ) (
   input  logic clk,
@@ -173,7 +173,7 @@ module data_sync #(
   
 endmodule
 // gray-code synchronizer using Data-Sync
-module gray_sync #(
+module async_fifo_gray_sync #(
   parameter int DATA_WIDTH = 4,
   parameter int SYNC_STAGE = 3
 ) (
@@ -183,7 +183,7 @@ module gray_sync #(
 );
   
   generate for(genvar i=0; i<DATA_WIDTH; i++) begin : gen_sync
-    data_sync #(
+    async_fifo_data_sync #(
       .SYNC_STAGE (SYNC_STAGE)
     ) data_sync (
       .clk  (clk), 

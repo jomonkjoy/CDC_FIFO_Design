@@ -19,6 +19,8 @@ module axis_upsizer #(
   input  logic                    m_axis_tready
   );
   
+  localparam int MSEL_WIDTH = $clog2(DATA_RATIO);
+  logic [MSEL_WIDTH-1:0] mux_sel;
   logic [DATA_RATIO-1:0] wen;
   logic [DATA_WIDTH-1:0] wdata[DATA_RATIO];
   logic [DATA_RATIO-1:0] wfull;
@@ -28,6 +30,16 @@ module axis_upsizer #(
   
   assign s_axis_tready = ~(&wfull);
   assign m_axis_tvalid = ~(&rempty);
+  
+  always_ff @(posedge clk) begin
+    if (reset) begin
+      mux_sel <= {MSEL_WIDTH{1'b0}};
+    end else if (mux_sel >= DATA_RATIO-1) begin
+      mux_sel <= {MSEL_WIDTH{1'b0}};
+    end else begin
+      mux_sel <= mux_sel + 1'b1;
+    end
+  end
   
   generate for(genvar i=0; i<=DATA_RATIO; i++) begin : gen
     sync_fifo_core #(

@@ -19,6 +19,16 @@ module axis_upsizer #(
   input  logic                    m_axis_tready
   );
   
+  logic [DATA_RATIO-1:0] wen;
+  logic [DATA_WIDTH-1:0] wdata[DATA_RATIO];
+  logic [DATA_RATIO-1:0] wfull;
+  logic [DATA_RATIO-1:0] ren;
+  logic [DATA_WIDTH-1:0] rdata[DATA_RATIO];
+  logic [DATA_RATIO-1:0] rempty;
+  
+  assign s_axis_tready = ~(&wfull);
+  assign m_axis_tvalid = ~(&rempty);
+  
   generate for(genvar i=0; i<=DATA_RATIO; i++) begin : gen
     sync_fifo_core #(
       .ADDR_WIDTH(ADDR_WIDTH),
@@ -26,13 +36,17 @@ module axis_upsizer #(
     ) fifo_core_inst (
       .clk    (clk),
       .reset  (reset),
-      .wen    (wen),
-      .wdata  (wdata),
-      .wfull  (wfull),
-      .ren    (ren),
-      .rdata  (rdata),
-      .rempty (rempty)
+      .wen    (wen[i]),
+      .wdata  (wdata[i]),
+      .wfull  (wfull[i]),
+      .ren    (ren[i]),
+      .rdata  (rdata[i]),
+      .rempty (rempty[i])
     );
+    assign wen[i] = mux_sel == i ? s_axis_tvalid && s_axis_tready : 1'b0;
+    assign ren[i] = m_axis_tvalid && m_axis_tready;
+    assign wdata[i] = s_axis_tdata;
+    assign m_axis_tdata[DATA_WIDTH*i+:DATA_WIDTH] = rdata[i];
   end endgenerate
   
 endmodule
